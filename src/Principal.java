@@ -19,18 +19,14 @@ public class Principal {
             System.out.print("Seleccione una opción: ");
 
             int opcion = leer.nextInt();
-            leer.nextLine(); // Limpiar el buffer
+            leer.nextLine();
 
             switch (opcion) {
                 case 1:
                     registrarNuevo(dao, leer);
                     break;
                 case 2:
-                    System.out.println("\n--- LISTA DE CELULARES ---");
-                    List<celular> lista = dao.listarTodos();
-                    for (celular c : lista) {
-                        System.out.println("- " + c.getMarca() + " " + c.getModelo() + " | Cam: " + c.getCamara() + "MP");
-                    }
+                    dao.listarInventarioCompleto();
                     break;
                 case 3:
                     System.out.print("Ingrese la marca a buscar: ");
@@ -48,9 +44,9 @@ public class Principal {
                     System.out.println("Opción no válida.");
             }
         }
+        leer.close();
     }
 
-    // Método auxiliar para mantener el código limpio
     private static void registrarNuevo(TiendaDAO dao, Scanner leer) {
         System.out.println("\n--- REGISTRO DE CELULAR ---");
         System.out.print("Marca: "); String marca = leer.nextLine();
@@ -58,14 +54,13 @@ public class Principal {
         System.out.print("Megapíxeles: "); int camara = leer.nextInt();
         System.out.print("Batería: "); int bateria = leer.nextInt();
 
-        int id = dao.insertarCelular(new celular(marca, modelo, camara, bateria));
+        System.out.print("Almacenamiento (GB): "); int almc = leer.nextInt();
+        System.out.print("Precio: "); double precio = leer.nextDouble();
+        System.out.print("RAM (GB): "); int ram = leer.nextInt();
 
-        if (id != -1) {
-            System.out.println("Celular guardado con ID: " + id);
-            System.out.print("Almacenamiento (GB): "); int almc = leer.nextInt();
-            System.out.print("Precio: "); double precio = leer.nextDouble();
-            System.out.print("RAM (GB): "); int ram = leer.nextInt();
-            dao.insertarInventario(new inventario(id, almc, precio, ram));
-        }
+        celular c = new celular(marca, modelo, camara, bateria);
+        inventario i = new inventario(0, almc, precio, ram);
+
+        dao.registrarCelularCompleto(c, i);
     }
 }
