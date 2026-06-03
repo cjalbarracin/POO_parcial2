@@ -1,7 +1,6 @@
-package db;
-
 import db.operaciones.VentanaTienda;
-import javax.swing.SwingUtilities;
+
+import javax.swing.*;
 
 public class Principal {
     public static void main(String[] args) {
