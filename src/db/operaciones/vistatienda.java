@@ -32,7 +32,7 @@ public class vistatienda extends JFrame {
         setTitle("Sistema de Gestión - Tienda de Celulares");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        this.setSize(800, 600);
+        this.setSize(836, 650);
         this.setLocationRelativeTo(null); // Centra la ventana en pantalla
 
         txtAreaResultados.setFont(new Font("Monospaced", Font.PLAIN, 12));
