@@ -1,5 +1,3 @@
-package db.operaciones;
-
 import db.DBConnection;
 import java.sql.*;
 
