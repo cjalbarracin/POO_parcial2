@@ -1,14 +1,13 @@
 package db.operaciones;
 
-import db.DBConnection; // Asegúrate de importar tu clase de conexión
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+// Importamos tus modelos desde el paquete 'model'
+import model.celular;
+import model.inventario;
 
-public class vistatienda extends JFrame { // Heredamos de JFrame
+public class vistatienda extends JFrame {
     private JPanel panel1;
     private JTextField txtPrecio;
     private JTextField txtAlmacenamiento;
@@ -25,33 +24,41 @@ public class vistatienda extends JFrame { // Heredamos de JFrame
     private JButton btnConsultarTodo;
     private JButton btnDescargarReporte;
 
-    // CONSTRUCTOR: Aquí es donde inicializamos la ventana
+    // Instancia del DAO (está en el mismo paquete, así que no requiere import)
+    private TiendaDAO dao = new TiendaDAO();
+
     public vistatienda() {
         setContentPane(panel1);
         setTitle("Sistema de Gestión - Tienda de Celulares");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         pack();
-        setLocationRelativeTo(null); // Centrar la ventana en pantalla
+        setLocationRelativeTo(null);
 
-        // Ejemplo: Configurar el botón de registrar
-        btnRegistrar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Aquí llamaremos a la función que inserta en la BD
-                JOptionPane.showMessageDialog(null, "Botón Registrar presionado");
+        // Lógica de Registro
+        btnRegistrar.addActionListener(e -> {
+            try {
+                celular c = new celular(txtMarca.getText(), txtModelo.getText(),
+                        Integer.parseInt(txtCamara.getText()),
+                        Integer.parseInt(txtBateria.getText()));
+                inventario i = new inventario(0, Integer.parseInt(txtAlmacenamiento.getText()),
+                        Double.parseDouble(txtPrecio.getText()),
+                        Integer.parseInt(txtRAM.getText()));
+
+                if (dao.registrarCelularCompleto(c, i)) {
+                    JOptionPane.showMessageDialog(this, "¡Celular registrado!");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
         });
-    }
 
-    // Este método es necesario para arrancar la app
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            vistatienda frame = new vistatienda();
-            frame.setVisible(true);
+        // Lógica de Consulta
+        btnConsultarTodo.addActionListener(e -> {
+            txtAreaResultados.setText(dao.obtenerInventarioCompletoTexto());
         });
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new vistatienda().setVisible(true));
     }
 }
