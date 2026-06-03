@@ -7,8 +7,8 @@ import java.sql.*;
 
 public class TiendaDAO {
 
-    // 1. Inserción transaccional atómica en dos tablas
-    public void registrarCelularCompleto(celular c, inventario i) throws SQLException {
+    // 1. Inserción transaccional de dos tablas relacionadas
+    public void registrarCellularCompleto(celular c, inventario i) throws SQLException {
         String sqlCelular = "INSERT INTO celular (marca, modelo, camara, bateria) VALUES (?, ?, ?, ?)";
         String sqlInventario = "INSERT INTO inventario (celular_id, almacenamiento, precio, ram) VALUES (?, ?, ?, ?)";
 
@@ -41,7 +41,7 @@ public class TiendaDAO {
         }
     }
 
-    // 2. Consulta de todo el inventario
+    // 2. Consulta de todo el inventario completo
     public String obtenerInventarioParaGUI() {
         StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
@@ -69,7 +69,7 @@ public class TiendaDAO {
         }
     }
 
-    // 4. Filtro por Marca (Flexible con LIKE)
+    // 4. Filtro flexible por Marca
     public String obtenerFiltroMarcaParaGUI(String marcaCriterio) {
         StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
@@ -84,7 +84,7 @@ public class TiendaDAO {
         }
     }
 
-    // 5. Filtro por Rango de Precios
+    // 5. Filtro por Rango de Precios (Mín - Máx)
     public String obtenerFiltroPrecioParaGUI(double min, double max) {
         StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
@@ -100,7 +100,7 @@ public class TiendaDAO {
         }
     }
 
-    // 6. Filtro por Almacenamiento exacto en GB
+    // 6. Filtro por Almacenamiento exacto (GB)
     public String obtenerFiltroAlmacenamientoParaGUI(int gb) {
         StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
