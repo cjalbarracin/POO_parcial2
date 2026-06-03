@@ -98,14 +98,28 @@ public class vistatienda extends JFrame {
             return;
         }
 
-        String fileName = "reporte_inventario.txt";
+        // Abrimos el selector de archivos nativo de Windows
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar Reporte en...");
+        fileChooser.setSelectedFile(new File("reporte_inventario.txt")); // Nombre sugerido
 
-        // Implementación de escritura de archivos basada en el documento [cite: 35-37, 67]
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            writer.write(contenido);
-            JOptionPane.showMessageDialog(this, "Reporte guardado exitosamente como: " + fileName);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error al escribir en el archivo: " + e.getMessage());
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            // Si el usuario no escribió .txt, se lo agregamos
+            String path = fileToSave.getAbsolutePath();
+            if (!path.endsWith(".txt")) {
+                path += ".txt";
+            }
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+                writer.write(contenido);
+                JOptionPane.showMessageDialog(this, "¡Reporte guardado con éxito!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+            }
         }
     }
 }
