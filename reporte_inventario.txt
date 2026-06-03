@@ -1,0 +1,8 @@
+Marca: Motorola | Modelo: Edge 40 Neo | Cámara: 50MP | Batería: 5000mAh | Almacenamiento: 256GB | RAM: 8GB | Precio: $1500000.0
+Marca: Motorola | Modelo: Moto G84 | Cámara: 50MP | Batería: 5000mAh | Almacenamiento: 256GB | RAM: 12GB | Precio: $950000.0
+Marca: Motorola | Modelo: Moto G54 | Cámara: 50MP | Batería: 5000mAh | Almacenamiento: 128GB | RAM: 8GB | Precio: $750000.0
+Marca: Motorola | Modelo: Razr 40 | Cámara: 64MP | Batería: 4200mAh | Almacenamiento: 256GB | RAM: 8GB | Precio: $2800000.0
+Marca: Tecno | Modelo: Camon 30 Pro | Cámara: 50MP | Batería: 5000mAh | Almacenamiento: 256GB | RAM: 12GB | Precio: $1400000.0
+Marca: tecno | Modelo: camon 30 | Cámara: 200MP | Batería: 5500mAh | Almacenamiento: 256GB | RAM: 10GB | Precio: $1000000.0
+Marca: alcatel | Modelo: f7 | Cámara: 20MP | Batería: 5000mAh | Almacenamiento: 64GB | RAM: 4GB | Precio: $350000.0
+Marca: motorola | Modelo: moto g85 | Cámara: 60MP | Batería: 5000mAh | Almacenamiento: 256GB | RAM: 12GB | Precio: $745000.0
