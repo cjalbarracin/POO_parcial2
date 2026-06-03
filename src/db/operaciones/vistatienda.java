@@ -4,10 +4,10 @@ import javax.swing.*;
 import model.celular;
 import model.inventario;
 import java.awt.*;
-import java.io.*; // Importante para BufferedWriter, FileWriter e IOException
+import java.io.*;
 
 public class vistatienda extends JFrame {
-    // Declaración de componentes
+    // Declaración de los componentes de la interfaz (botones, cajas de texto, etc.)
     private JPanel panel1;
     private JTextField txtMarca;
     private JTextField txtModelo;
@@ -24,6 +24,7 @@ public class vistatienda extends JFrame {
     private JButton btnConsultarTodo;
     private JButton btnDescargarReporte;
 
+    // Conectamos la interfaz con nuestro "Encargado de Bodega" (DAO)
     private TiendaDAO dao = new TiendaDAO();
 
     public vistatienda() {
@@ -31,23 +32,19 @@ public class vistatienda extends JFrame {
         setTitle("Sistema de Gestión - Tienda de Celulares");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Configuración de tamaño y centrado
         this.setSize(800, 600);
-        this.setLocationRelativeTo(null);
+        this.setLocationRelativeTo(null); // Centra la ventana en pantalla
 
-        // Estética básica
         txtAreaResultados.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
-        // Eventos
+        // Asignamos las acciones a cada botón de la interfaz
         btnRegistrar.addActionListener(e -> registrar());
         btnConsultarTodo.addActionListener(e -> txtAreaResultados.setText(dao.obtenerInventarioCompletoTexto()));
-
         btnAplicarFiltro.addActionListener(e -> filtrar());
-
-        // Evento para el botón de reporte
         btnDescargarReporte.addActionListener(e -> descargarReporte());
     }
 
+    // Lógica para filtrar datos según lo que el usuario elija en el combo box
     private void filtrar() {
         String criterio = cmbBuscarPor.getSelectedItem().toString();
         String valor = txtBuscar.getText().trim();
@@ -71,6 +68,7 @@ public class vistatienda extends JFrame {
         }
     }
 
+    // Toma los datos de las cajas de texto y los envía a registrar mediante el DAO
     private void registrar() {
         try {
             celular c = new celular(txtMarca.getText(), txtModelo.getText(),
@@ -90,6 +88,7 @@ public class vistatienda extends JFrame {
         }
     }
 
+    // Abre una ventana para que el usuario elija dónde guardar el reporte de texto
     private void descargarReporte() {
         String contenido = txtAreaResultados.getText();
 
@@ -98,22 +97,23 @@ public class vistatienda extends JFrame {
             return;
         }
 
-        // Abrimos el selector de archivos nativo de Windows
+        // Selector nativo de archivos para evitar problemas de rutas
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Guardar Reporte en...");
-        fileChooser.setSelectedFile(new File("reporte_inventario.txt")); // Nombre sugerido
+        fileChooser.setSelectedFile(new File("reporte_inventario.txt"));
 
         int userSelection = fileChooser.showSaveDialog(this);
 
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
 
-            // Si el usuario no escribió .txt, se lo agregamos
+            // Aseguramos que el archivo tenga extensión .txt
             String path = fileToSave.getAbsolutePath();
             if (!path.endsWith(".txt")) {
                 path += ".txt";
             }
 
+            // Escribimos el contenido en el archivo seleccionado
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
                 writer.write(contenido);
                 JOptionPane.showMessageDialog(this, "¡Reporte guardado con éxito!");

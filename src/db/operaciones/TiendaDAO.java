@@ -7,10 +7,7 @@ import java.sql.*;
 
 public class TiendaDAO {
 
-    /* * Patrón de diseño para centralizar la lectura de datos.
-     * Utiliza StringBuilder para concatenar cadenas eficientemente en memoria,
-     * evitando la creación innecesaria de objetos String en cada iteración del bucle.
-     */
+    // Une los resultados de la base de datos en un solo texto legible
     private String ejecutarConsulta(String sql) {
         StringBuilder sb = new StringBuilder();
         try (Connection conn = DBConnection.getConnection();
@@ -34,16 +31,13 @@ public class TiendaDAO {
         }
     }
 
-    /* * Operación atómica: usa transacciones (setAutoCommit(false)) para garantizar la integridad.
-     * Si el registro en 'celular' o en 'inventario' falla, el 'rollback' evita datos huérfanos.
-     * RETURN_GENERATED_KEYS permite recuperar el ID autoincremental del celular para vincularlo al inventario.
-     */
+    // Registra el celular y su inventario. Si uno falla, cancela todo (transacción)
     public boolean registrarCelularCompleto(celular c, inventario i) {
         String sqlCelular = "INSERT INTO celular (marca, modelo, camara, bateria) VALUES (?, ?, ?, ?)";
         String sqlInventario = "INSERT INTO inventario (celular_id, almacenamiento, precio, ram) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false);
+            conn.setAutoCommit(false); // Iniciamos modo seguro
             try (PreparedStatement ps1 = conn.prepareStatement(sqlCelular, Statement.RETURN_GENERATED_KEYS)) {
                 ps1.setString(1, c.getMarca());
                 ps1.setString(2, c.getModelo());
@@ -51,48 +45,46 @@ public class TiendaDAO {
                 ps1.setInt(4, c.getBateria());
                 ps1.executeUpdate();
 
-                ResultSet rs = ps1.getGeneratedKeys();
+                ResultSet rs = ps1.getGeneratedKeys(); // Obtenemos el ID del celular recién creado
                 if (rs.next()) {
                     try (PreparedStatement ps2 = conn.prepareStatement(sqlInventario)) {
-                        ps2.setInt(1, rs.getInt(1));
+                        ps2.setInt(1, rs.getInt(1)); // Usamos el ID del celular
                         ps2.setInt(2, i.getAlmacenamiento());
                         ps2.setDouble(3, i.getPrecio());
                         ps2.setInt(4, i.getRam());
                         ps2.executeUpdate();
                     }
                 }
-                conn.commit(); // Persiste ambos cambios solo si todo fue exitoso
+                conn.commit(); // Todo OK, guardamos cambios
                 return true;
             } catch (SQLException e) {
-                conn.rollback(); // Reverte cambios si ocurre error en la inserción
+                conn.rollback(); // Error: revertimos todo
                 return false;
             }
         } catch (SQLException e) { return false; }
     }
 
-    /* * Consultas centralizadas: se utiliza JOIN para normalizar la obtención de datos
-     * de dos tablas relacionadas, optimizando el tráfico de red con una única consulta.
-     */
+    // Trae toda la info de ambas tablas unidas
     public String obtenerInventarioCompletoTexto() {
         return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
                 "FROM celular c JOIN inventario i ON c.id = i.celular_id");
     }
 
-    /* * ILIKE se utiliza para búsquedas case-insensitive (insensible a mayúsculas/minúsculas).
-     * Nota: En producción real, considera validar el input para evitar SQL Injection.
-     */
+    // Busca por marca (ignora mayúsculas/minúsculas)
     public String filtrarPorMarcaTexto(String marca) {
         return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
                 "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
                 "WHERE c.marca ILIKE '%" + marca + "%'");
     }
 
+    // Filtra los productos que cuestan igual o menos a la cifra dada
     public String filtrarPorPrecioMax(double precio) {
         return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
                 "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
                 "WHERE i.precio <= " + precio);
     }
 
+    // Filtra por capacidad de almacenamiento exacta
     public String filtrarPorAlmacenamiento(int gb) {
         return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
                 "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
