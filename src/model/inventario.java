@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class inventario {
 
+    // Detalles técnicos que guardamos de cada producto en inventario
     private int id;
     private int celular_id;
     private int almacenamiento;
@@ -11,6 +12,7 @@ public class inventario {
     private int ram;
     private Timestamp creado;
 
+    // Constructor completo: usado cuando ya tenemos toda la información, incluyendo el ID de la base de datos
     public inventario(int id, int celular_id, int almacenamiento, double precio, int ram, Timestamp creado) {
         this.id = id;
         this.celular_id = celular_id;
@@ -20,12 +22,16 @@ public class inventario {
         this.creado = creado;
     }
 
+    // Constructor simplificado: usado al crear un producto nuevo, antes de que tenga ID o fecha
     public inventario(int celular_id, int almacenamiento, double precio, int ram) {
         this.celular_id = celular_id;
         this.almacenamiento = almacenamiento;
         this.precio = precio;
         this.ram = ram;
     }
+
+    // --- MÉTODOS DE ACCESO (GETTERS) ---
+    // Permiten consultar cada una de las características guardadas en el objeto
 
     public int getId() {
         return id;
