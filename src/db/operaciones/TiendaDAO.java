@@ -19,8 +19,11 @@ public class TiendaDAO {
                 encontrado = true;
                 sb.append("Marca: ").append(rs.getString("marca"))
                         .append(" | Modelo: ").append(rs.getString("modelo"))
-                        .append(" | Precio: $").append(rs.getDouble("precio"))
-                        .append(" | Almacenamiento: ").append(rs.getInt("almacenamiento")).append("GB\n");
+                        .append(" | Cámara: ").append(rs.getInt("camara")).append("MP")
+                        .append(" | Batería: ").append(rs.getInt("bateria")).append("mAh")
+                        .append(" | Almacenamiento: ").append(rs.getInt("almacenamiento")).append("GB")
+                        .append(" | RAM: ").append(rs.getInt("ram")).append("GB")
+                        .append(" | Precio: $").append(rs.getDouble("precio")).append("\n");
             }
             return encontrado ? sb.toString() : "No se encontraron resultados.";
         } catch (SQLException e) {
@@ -59,22 +62,30 @@ public class TiendaDAO {
     }
 
     // 2. Consulta General
+    // Consulta General
     public String obtenerInventarioCompletoTexto() {
-        return ejecutarConsulta("SELECT c.marca, c.modelo, i.precio, i.almacenamiento FROM celular c JOIN inventario i ON c.id = i.celular_id");
+        return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id");
     }
 
-    // 3. Filtro por Marca
+    // Filtro por Marca
     public String filtrarPorMarcaTexto(String marca) {
-        return ejecutarConsulta("SELECT c.marca, c.modelo, i.precio, i.almacenamiento FROM celular c JOIN inventario i ON c.id = i.celular_id WHERE c.marca ILIKE '%" + marca + "%'");
+        return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE c.marca ILIKE '%" + marca + "%'");
     }
 
-    // 4. Filtro por Precio Máximo
+    // Filtro por Precio Máximo
     public String filtrarPorPrecioMax(double precio) {
-        return ejecutarConsulta("SELECT c.marca, c.modelo, i.precio, i.almacenamiento FROM celular c JOIN inventario i ON c.id = i.celular_id WHERE i.precio <= " + precio);
+        return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE i.precio <= " + precio);
     }
 
-    // 5. Filtro por Almacenamiento
+    // Filtro por Almacenamiento
     public String filtrarPorAlmacenamiento(int gb) {
-        return ejecutarConsulta("SELECT c.marca, c.modelo, i.precio, i.almacenamiento FROM celular c JOIN inventario i ON c.id = i.celular_id WHERE i.almacenamiento = " + gb);
+        return ejecutarConsulta("SELECT c.marca, c.modelo, c.camara, c.bateria, i.almacenamiento, i.precio, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE i.almacenamiento = " + gb);
     }
 }
