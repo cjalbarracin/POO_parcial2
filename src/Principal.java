@@ -15,7 +15,9 @@ public class Principal {
             System.out.println("1. Registrar nuevo celular e inventario");
             System.out.println("2. Consultar todos los celulares");
             System.out.println("3. Filtrar celulares por marca");
-            System.out.println("4. Salir");
+            System.out.println("4. Filtrar celulares por rango de precio");
+            System.out.println("5. Filtrar celulares por almacenamiento");
+            System.out.println("6. Salir");
             System.out.print("Seleccione una opción: ");
 
             int opcion = leer.nextInt();
@@ -37,6 +39,22 @@ public class Principal {
                     }
                     break;
                 case 4:
+                    System.out.print("Ingrese el precio MÍNIMO: ");
+                    double pMin = leer.nextDouble();
+                    System.out.print("Ingrese el precio MÁXIMO: ");
+                    double pMax = leer.nextDouble();
+                    leer.nextLine();
+
+                    dao.filtrarPorPrecio(pMin, pMax);
+                    break;
+                case 5:
+                    System.out.print("Ingrese el almacenamiento deseado (Ej: 64, 128, 256): ");
+                    int gbBuscar = leer.nextInt();
+                    leer.nextLine();
+
+                    dao.filtrarPorAlmacenamiento(gbBuscar);
+                    break;
+                case 6:
                     salir = true;
                     System.out.println("¡Hasta luego!");
                     break;
