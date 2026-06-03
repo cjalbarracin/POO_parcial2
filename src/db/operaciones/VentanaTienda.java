@@ -216,4 +216,43 @@ public class VentanaTienda extends JFrame {
                     try {
                         double min = Double.parseDouble(valor);
                         double max = Double.parseDouble(txtPrecioMax.getText().trim());
-                        resultado =
+                        resultado = dao.obtenerFiltroPrecioParaGUI(min, max);
+                    } catch (Exception ex) {
+                        resultado = "Error numérico: Ingrese valores válidos en las casillas de Precio Mínimo y Máximo.";
+                    }
+                    break;
+                case 3: // Filtrar por Almacenamiento (GB)
+                    try {
+                        int gb = Integer.parseInt(valor);
+                        resultado = dao.obtenerFiltroAlmacenamientoParaGUI(gb);
+                    } catch (NumberFormatException ex) {
+                        resultado = "Error: El almacenamiento debe expresarse en números enteros (Ej: 128, 256).";
+                    }
+                    break;
+            }
+            txtAreaResultados.setText(resultado);
+        });
+
+        // --- ACCIÓN 4: EXPORTACIÓN A ARCHIVOS PLANOS (.TXT) ---
+        btnExportar.addActionListener(e -> {
+            String textoAExportar = txtAreaResultados.getText();
+            if (textoAExportar.trim().isEmpty() || textoAExportar.startsWith("Filtrando") || textoAExportar.startsWith("Consultando")) {
+                JOptionPane.showMessageDialog(this, "No hay ningún reporte o resultado válido en pantalla para exportar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String nombreArchivo = "reporte_tienda.txt";
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo))) {
+                writer.write(textoAExportar);
+                JOptionPane.showMessageDialog(this, "¡Reporte guardado exitosamente como '" + nombreArchivo + "' en la raíz del proyecto!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error de escritura de archivo: " + ex.getMessage(), "Error I/O", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+    }
+
+    private void limpiarCampos() {
+        txtMarca.setText(""); txtModelo.setText(""); txtCamara.setText("");
+        txtBateria.setText(""); txtAlmacenamiento.setText(""); txtPrecio.setText(""); txtRam.setText("");
+    }
+}
