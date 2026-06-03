@@ -4,20 +4,16 @@ import db.DBConnection;
 import model.celular;
 import model.inventario;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TiendaDAO {
 
-    // 1. Registro transaccional: Inserta en ambas tablas y vincula el ID
-    public void registrarCelularCompleto(celular c, inventario i) {
+    // 1. Inserción transaccional atómica en dos tablas
+    public void registrarCelularCompleto(celular c, inventario i) throws SQLException {
         String sqlCelular = "INSERT INTO celular (marca, modelo, camara, bateria) VALUES (?, ?, ?, ?)";
         String sqlInventario = "INSERT INTO inventario (celular_id, almacenamiento, precio, ram) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false); // Iniciar transacción
-
-            // Insertar celular
+            conn.setAutoCommit(false);
             try (PreparedStatement ps1 = conn.prepareStatement(sqlCelular, Statement.RETURN_GENERATED_KEYS)) {
                 ps1.setString(1, c.getMarca());
                 ps1.setString(2, c.getModelo());
@@ -25,140 +21,118 @@ public class TiendaDAO {
                 ps1.setInt(4, c.getBateria());
                 ps1.executeUpdate();
 
-                ResultSet rs = ps1.getGeneratedKeys();
-                if (rs.next()) {
-                    int idGenerado = rs.getInt(1);
-
-                    // Insertar inventario vinculado
-                    try (PreparedStatement ps2 = conn.prepareStatement(sqlInventario)) {
-                        ps2.setInt(1, idGenerado);
-                        ps2.setInt(2, i.getAlmacenamiento());
-                        ps2.setDouble(3, i.getPrecio());
-                        ps2.setInt(4, i.getRam());
-                        ps2.executeUpdate();
+                try (ResultSet rs = ps1.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idGenerado = rs.getInt(1);
+                        try (PreparedStatement ps2 = conn.prepareStatement(sqlInventario)) {
+                            ps2.setInt(1, idGenerado);
+                            ps2.setInt(2, i.getAlmacenamiento());
+                            ps2.setDouble(3, i.getPrecio());
+                            ps2.setInt(4, i.getRam());
+                            ps2.executeUpdate();
+                        }
                     }
                 }
-                conn.commit(); // Confirmar ambos cambios
-                System.out.println("Registro exitoso en ambas tablas.");
+                conn.commit();
             } catch (SQLException e) {
-                conn.rollback(); // Si algo falla, deshacer todo
+                conn.rollback();
                 throw e;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    // 2. Consulta unificada (JOIN): Trae toda la info de ambas tablas
-    public void listarInventarioCompleto() {
+    // 2. Consulta de todo el inventario
+    public String obtenerInventarioParaGUI() {
+        StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
-                "FROM celular c " +
-                "JOIN inventario i ON c.id = i.celular_id";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            System.out.println("\n--- LISTADO COMPLETO ---");
-            while (rs.next()) {
-                System.out.println("Marca: " + rs.getString("marca") +
-                        " | Modelo: " + rs.getString("modelo") +
-                        " | Precio: $" + rs.getDouble("precio") +
-                        " | Almacenamiento: " + rs.getInt("almacenamiento") + "GB" +
-                        " | RAM: " + rs.getInt("ram") + "GB");
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-    }
-
-    // 3. Filtrado por marca
-    // 3. Filtrado por marca
-    public List<celular> filtrarPorMarca(String marca) {
-        List<celular> lista = new ArrayList<>();
-        String sql = "SELECT * FROM celular WHERE marca ILIKE ?";
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id ORDER BY c.marca ASC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "%" + marca + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    lista.add(new celular(
-                            rs.getString("marca"),
-                            rs.getString("modelo"),
-                            rs.getInt("camara"),
-                            rs.getInt("bateria")
-                    ));
-                }
-            }
+            return procesarResultSet(ps, sb);
         } catch (SQLException e) {
-            e.printStackTrace();
+            return "Error al leer inventario: " + e.getMessage();
         }
-        return lista;
     }
 
-    // 4. Filtrar por rango de precios (Muestra info completa)
-    public void filtrarPorPrecio(double precioMin, double precioMax) {
+    // 3. Consulta de un único registro por modelo exacto
+    public String consultarUnRegistroPorModelo(String modeloBuscar) {
+        StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
-                "FROM celular c " +
-                "JOIN inventario i ON c.id = i.celular_id " +
-                "WHERE i.precio BETWEEN ? AND ? " +
-                "ORDER BY i.precio ASC";
-
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE LOWER(c.modelo) = LOWER(?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setDouble(1, precioMin);
-            ps.setDouble(2, precioMax);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                System.out.println("\n--- CELULARES ENTRE $" + precioMin + " Y $" + precioMax + " ---");
-                boolean conResultados = false;
-
-                while (rs.next()) {
-                    conResultados = true;
-                    System.out.println("Marca: " + rs.getString("marca") +
-                            " | Modelo: " + rs.getString("modelo") +
-                            " | Precio: $" + rs.getDouble("precio") +
-                            " | Almacenamiento: " + rs.getInt("almacenamiento") + "GB" +
-                            " | RAM: " + rs.getInt("ram") + "GB");
-                }
-                if (!conResultados) {
-                    System.out.println("No se encontraron celulares en este rango de precio.");
-                }
-            }
+            ps.setString(1, modeloBuscar);
+            return procesarResultSet(ps, sb);
         } catch (SQLException e) {
-            e.printStackTrace();
+            return "Error al buscar modelo: " + e.getMessage();
         }
     }
 
-    // 5. Filtrar por almacenamiento específico (Ej: 128, 256)
-    public void filtrarPorAlmacenamiento(int gb) {
+    // 4. Filtro por Marca (Flexible con LIKE)
+    public String obtenerFiltroMarcaParaGUI(String marcaCriterio) {
+        StringBuilder sb = new StringBuilder();
         String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
-                "FROM celular c " +
-                "JOIN inventario i ON c.id = i.celular_id " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE LOWER(c.marca) LIKE LOWER(?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + marcaCriterio + "%");
+            return procesarResultSet(ps, sb);
+        } catch (SQLException e) {
+            return "Error al filtrar por marca: " + e.getMessage();
+        }
+    }
+
+    // 5. Filtro por Rango de Precios
+    public String obtenerFiltroPrecioParaGUI(double min, double max) {
+        StringBuilder sb = new StringBuilder();
+        String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
+                "WHERE i.precio BETWEEN ? AND ? ORDER BY i.precio ASC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDouble(1, min);
+            ps.setDouble(2, max);
+            return procesarResultSet(ps, sb);
+        } catch (SQLException e) {
+            return "Error en filtro de precios: " + e.getMessage();
+        }
+    }
+
+    // 6. Filtro por Almacenamiento exacto en GB
+    public String obtenerFiltroAlmacenamientoParaGUI(int gb) {
+        StringBuilder sb = new StringBuilder();
+        String sql = "SELECT c.marca, c.modelo, i.precio, i.almacenamiento, i.ram " +
+                "FROM celular c JOIN inventario i ON c.id = i.celular_id " +
                 "WHERE i.almacenamiento = ?";
-
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setInt(1, gb);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                System.out.println("\n--- CELULARES CON " + gb + "GB DE ALMACENAMIENTO ---");
-                boolean conResultados = false;
-
-                while (rs.next()) {
-                    conResultados = true;
-                    System.out.println("Marca: " + rs.getString("marca") +
-                            " | Modelo: " + rs.getString("modelo") +
-                            " | Precio: $" + rs.getDouble("precio") +
-                            " | Almacenamiento: " + rs.getInt("almacenamiento") + "GB" +
-                            " | RAM: " + rs.getInt("ram") + "GB");
-                }
-                if (!conResultados) {
-                    System.out.println("No se encontraron celulares con esa capacidad.");
-                }
-            }
+            return procesarResultSet(ps, sb);
         } catch (SQLException e) {
-            e.printStackTrace();
+            return "Error en filtro de almacenamiento: " + e.getMessage();
         }
+    }
+
+    private String procesarResultSet(PreparedStatement ps, StringBuilder sb) throws SQLException {
+        try (ResultSet rs = ps.executeQuery()) {
+            sb.append(String.format("%-15s | %-15s | %-12s | %-12s | %-8s\n", "MARCA", "MODELO", "PRECIO", "ALMACEN.", "RAM"));
+            sb.append("-----------------------------------------------------------------------------\n");
+            boolean tieneDatos = false;
+            while (rs.next()) {
+                tieneDatos = true;
+                sb.append(String.format("%-15s | %-15s | $%-11.2f | %-4d GB    | %-2d GB\n",
+                        rs.getString("marca"),
+                        rs.getString("modelo"),
+                        rs.getDouble("precio"),
+                        rs.getInt("almacenamiento"),
+                        rs.getInt("ram")));
+            }
+            if (!tieneDatos) {
+                sb.append("No se encontraron registros que coincidan con la búsqueda seleccionada.");
+            }
+        }
+        return sb.toString();
     }
 }
