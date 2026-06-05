@@ -71,6 +71,7 @@ public class vistatienda extends JFrame {
     // Toma los datos de las cajas de texto y los envía a registrar mediante el DAO
     private void registrar() {
         try {
+            // 1. Recolección de datos
             celular c = new celular(txtMarca.getText(), txtModelo.getText(),
                     Integer.parseInt(txtCamara.getText()),
                     Integer.parseInt(txtBateria.getText()));
@@ -78,14 +79,31 @@ public class vistatienda extends JFrame {
                     Double.parseDouble(txtPrecio.getText()),
                     Integer.parseInt(txtRAM.getText()));
 
+            // 2. Ejecución DAO
             if (dao.registrarCelularCompleto(c, i)) {
                 JOptionPane.showMessageDialog(this, "¡Celular registrado con éxito!");
+
+                // --- AQUÍ ESTÁ LA MEJORA ---
+                limpiarCampos();
+                // Esto permite que el usuario siga registrando sin borrar manualmente
             } else {
                 JOptionPane.showMessageDialog(this, "Error al guardar en base de datos.");
             }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Por favor, ingresa números válidos en los campos numéricos.");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error en los datos: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
+    }
+    private void limpiarCampos() {
+        txtMarca.setText("");
+        txtModelo.setText("");
+        txtCamara.setText("");
+        txtBateria.setText("");
+        txtAlmacenamiento.setText("");
+        txtPrecio.setText("");
+        txtRAM.setText("");
+        txtMarca.requestFocus(); // Devuelve el cursor al primer campo
     }
 
     // Abre una ventana para que el usuario elija dónde guardar el reporte de texto

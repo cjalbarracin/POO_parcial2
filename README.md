@@ -4,7 +4,7 @@ Este proyecto constituye una solución integral para la administración de inven
 
 
 
-## 🏗️ Análisis Técnico y Arquitectura del Sistema
+## Análisis Técnico y Arquitectura del Sistema
 
 El software ha sido estructurado para separar las responsabilidades mediante las siguientes capas:
 
@@ -23,13 +23,13 @@ Esta capa es el núcleo funcional del sistema y se encarga de la persistencia de
 ### 4. Capa de Configuración y Conexión (`DBConnection`)
 La gestión de credenciales se centraliza mediante el archivo `config.properties`. El sistema utiliza `java.util.Properties` para cargar esta configuración en tiempo de ejecución, logrando un **desacoplamiento total** entre el código fuente y los entornos (desarrollo, pruebas o producción).
 
-## 🛠️ Procesamiento de Reportes y Funcionalidades
+## Procesamiento de Reportes y Funcionalidades
 El módulo de reportes no solo extrae datos, sino que realiza un procesamiento intermedio:
 1. **Extracción:** El contenido del `JTextArea` es capturado tras cualquier consulta.
 2. **Transformación:** Se utiliza el almacenamiento intermedio para formatear los resultados.
 3. **Persistencia Local:** A través de un `JFileChooser`, el usuario define el destino, y un `BufferedWriter` realiza la escritura física en disco. Este proceso cuenta con un manejo robusto de excepciones (`IOException`) que permite al sistema recuperarse ante bloqueos de archivos o problemas de permisos.
 
-## 🚀 Justificación de Diseño
+## Justificación de Diseño
 * **Atomicidad:** Garantizada por el control manual de transacciones.
 * **Abstracción:** La interfaz no conoce los detalles de la base de datos; solo interactúa con los métodos definidos en la capa DAO.
 * **Flexibilidad:** Gracias al sistema de búsqueda dinámica mediante `ILIKE`, el usuario puede realizar consultas complejas con una latencia mínima.
